@@ -124,10 +124,10 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void removeCard(String game, String cardID) {
-        // FIX THIS
-        String deleteCardSQL = "DELETE FROM " + game + " WHERE _id = " + "'" + cardID + "'";
-        getWritableDatabase().rawQuery(deleteCardSQL, null);
-        Log.d(TAG, "removeCard: " + deleteCardSQL);
+        getWritableDatabase().delete(
+                game,
+                getGameAttributes(game)[1] + " = " + "'" + cardID + "'",
+                null);
     }
 
     public Cursor getGameCursor(String game) {
@@ -141,6 +141,24 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
         } catch (SQLiteException e) {
             Log.d(TAG, "removeGame: FAILED");
         }
+    }
+
+    public ArrayList<String> getCardInfo(String game, String cardName) {
+        int x=0;
+        ArrayList<String> cardInfo = new ArrayList<>();
+        String[] attributes = getGameAttributes(game);
+//        String getCardInfoSQL = "SELECT * FROM ? WHERE ? = '?'";
+//        String[] getCardInfoSQLArgs = new String[]{game, attributes[1], cardName};
+//        Cursor cursor = getReadableDatabase().rawQuery(getCardInfoSQL, getCardInfoSQLArgs);
+        Cursor cursor = getReadableDatabase().query(game, attributes, attributes[1] + " = '" + cardName + "'", null, null, null, null);
+
+        cursor.moveToFirst();
+        for (String attribute: attributes) {
+            if (attribute.equals("_id")) continue;
+            cardInfo.add(attribute + ": " + cursor.getString(cursor.getColumnIndex(attribute)));
+        }
+
+        return cardInfo;
     }
 
     public void clearDB() {

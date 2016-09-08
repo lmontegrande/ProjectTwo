@@ -2,11 +2,14 @@ package com.example.lmont.projecttwo;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,13 +81,24 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
                 String[] attributes = dbHelper.getGameAttributes(gameName);
                 LinearLayout v = new LinearLayout(context);
+                v.setBackgroundColor(getResources().getColor(R.color.colorAccent));
                 v.setOrientation(LinearLayout.HORIZONTAL);
+                TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+                layoutParams.setMargins(10, 10, 10, 10);
+                v.setLayoutParams(layoutParams);
+                v.setPadding(10, 10, 10, 10);
 
                 for (int x=1; x<attributes.length; x++) {
                     String attribute = attributes[x];
                     TextView textView = new TextView(context);
-                    textView.setLayoutParams(new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-                    textView.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                    //textView.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                    textView.setTextColor(Color.WHITE);
+                    textView.setTextSize(20);
+
+                    TableLayout.LayoutParams params = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+                    params.setMargins(10, 10, 10, 10);
+                    textView.setLayoutParams(params);
+                    textView.setGravity(Gravity.CENTER);
 
                     textView.setText(cursor.getString(cursor.getColumnIndex(attribute)));
 
@@ -96,12 +110,22 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             @Override
-            public void bindView(View view, Context context, final Cursor cursor) {
+            public void bindView(View view, Context context, Cursor cursor) {
+                final String[] gameAttributes = dbHelper.getGameAttributes(gameName);
+                final String value = cursor.getString(cursor.getColumnIndex(gameAttributes[1]));
+                view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent intent = new Intent(GameActivity.this, CardActivity.class);
+                        intent.putExtra(CardActivity.GAME_KEY, gameName);
+                        intent.putExtra(CardActivity.CARD_KEY, value);
+                        startActivity(intent);
+                    }
+                });
                 view.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View view) {
-                        String[] gameAttributes = dbHelper.getGameAttributes(gameName);
-                        dbHelper.removeCard(gameName, cursor.getString(cursor.getColumnIndex(gameAttributes[1])));
+                        dbHelper.removeCard(gameName, value);
                         updateList();
                         return false;
                     }

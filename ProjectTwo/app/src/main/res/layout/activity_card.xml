@@ -9,7 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     android:background="@drawable/arrows"
-    tools:context="com.example.lmont.projecttwo.MainActivity">
+    tools:context="com.example.lmont.projecttwo.CardActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,33 +17,33 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/card_activity_back_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_margin="10dp"
-            android:visibility="invisible"/>
+            android:layout_margin="10dp"/>
 
         <TextView
-            android:id="@+id/game_header_textview"
+            android:id="@+id/card_activity_header_textview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="3"
-            android:text="Card Base"
+            android:text="Card Name"
             android:gravity="center"
             android:textColor="@color/colorAccent"
             android:textSize="40dp"/>
 
         <Button
-            android:id="@+id/game_add_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_margin="10dp"/>
+            android:layout_margin="10dp"
+            android:visibility="invisible"/>
     </LinearLayout>
 
     <ListView
-        android:id="@+id/game_listview"
+        android:id="@+id/card_activity_information_listview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="10dp"></ListView>
 </LinearLayout>
