@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -87,6 +88,9 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 layoutParams.setMargins(10, 10, 10, 10);
                 v.setLayoutParams(layoutParams);
                 v.setPadding(10, 10, 10, 10);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    v.setBackground(getDrawable(R.drawable.layout_bg));
+                }
 
                 for (int x=1; x<attributes.length; x++) {
                     String attribute = attributes[x];

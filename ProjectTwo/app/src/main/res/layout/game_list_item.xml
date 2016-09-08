@@ -10,7 +10,7 @@
         android:text="EMPTY"
         android:textSize="30dp"
         android:gravity="center"
-        android:background="@color/colorAccent"
+        android:background="@drawable/layout_bg"
         android:layout_margin="5dp"
         android:textColor="@android:color/white"/>
 </LinearLayout>
