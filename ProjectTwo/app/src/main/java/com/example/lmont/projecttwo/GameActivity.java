@@ -1,5 +1,6 @@
 package com.example.lmont.projecttwo;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,9 +10,12 @@ import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -31,6 +35,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     public static final String GAME_KEY = "gamekey";
     public Context context;
 
+    private static String lastGame;
     private String gameName;
     private Button addButton;
     private Button backButton;
@@ -48,10 +53,12 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
         setup();
         bindData();
+        handleIntent();
     }
 
     private void bindData() {
         gameNameTextView.setText(gameName);
+        attachCursorAdapter();
     }
 
     private void setup() {
@@ -63,6 +70,12 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         cardList = (ListView) findViewById(R.id.game_activity_listview);
         dbHelper = CardDatabaseHelper.getInstance(this);
 
+        if (gameName == null) {
+            gameName = lastGame;
+        } else {
+            lastGame = gameName;
+        }
+
         addButton.setBackgroundResource(R.mipmap.brown_add_icon_noback);
         backButton.setBackgroundResource(android.R.drawable.ic_delete);
         addButton.setOnClickListener(this);
@@ -72,8 +85,6 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
         });
-
-        attachCursorAdapter();
     }
 
     private void attachCursorAdapter() {
@@ -189,5 +200,42 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
     private void updateList() {
         cursorAdapter.changeCursor(dbHelper.getGameCursor(gameName));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //return super.onCreateOptionsMenu(menu);
+
+        getMenuInflater().inflate(R.menu.menu, menu);
+
+        SearchManager searchManager =
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getComponentName()));
+
+        return true;
+    }
+
+    @Override
+    public boolean onSearchRequested() {
+        return super.onSearchRequested();
+    }
+
+    public void handleIntent() {
+        Intent intent = getIntent();
+        if (!intent.ACTION_SEARCH.equals(intent.getAction())) return;
+        cursorAdapter.changeCursor(dbHelper.getCardCursor(intent.getStringExtra(SearchManager.QUERY), gameName));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.reset:
+                cursorAdapter.changeCursor(dbHelper.getCardCursor("", gameName));
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

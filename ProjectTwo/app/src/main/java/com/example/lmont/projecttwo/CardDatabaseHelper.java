@@ -109,6 +109,12 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
         return gameNamesSQL;
     }
 
+    public Cursor getCardGamesCursor(String contains) {
+        String searchSQL = "SELECT * FROM " + GAME_TABLE_NAME + " WHERE " + GAME_TABLE_FOREIGN_KEY + " LIKE '%" + contains + "%'";
+        Cursor gameNamesSQL = getReadableDatabase().rawQuery(searchSQL, null);
+        return gameNamesSQL;
+    }
+
     public String[] getGameAttributes(String game) {
         Cursor dbCursor = getReadableDatabase().query(game, null, null, null, null, null, null);
         return dbCursor.getColumnNames();
@@ -132,6 +138,10 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getGameCursor(String game) {
         return getReadableDatabase().rawQuery("SELECT * FROM " + game, null);
+    }
+
+    public Cursor getCardCursor(String card, String game) {
+        return getReadableDatabase().rawQuery("SELECT * FROM " + game + " WHERE " + getGameAttributes(game)[1] + " LIKE '%" + card + "%'", null);
     }
 
     public void removeGame(String game) {

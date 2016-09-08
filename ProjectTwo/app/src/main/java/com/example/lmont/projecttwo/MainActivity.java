@@ -1,5 +1,6 @@
 package com.example.lmont.projecttwo;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.database.Cursor;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     static final String TAG = "LEO";
+    static final String SEARCH_KEY = "search_key";
 
     Context activityContext;
     Button addButton;
@@ -47,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setup();
         //clearData();
         bindData();
+        handleIntent();
     }
 
     protected void setup() {
@@ -109,19 +113,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
+        //return super.onCreateOptionsMenu(menu);
+
+        getMenuInflater().inflate(R.menu.menu, menu);
+
+        SearchManager searchManager =
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getComponentName()));
+
         return true;
+    }
+
+    public void handleIntent() {
+        Intent intent = getIntent();
+        if (!intent.ACTION_SEARCH.equals(intent.getAction())) return;
+
+        cursorAdapter.changeCursor(dbHelper.getCardGamesCursor(intent.getStringExtra(SearchManager.QUERY)));
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.new_game:
-                Toast.makeText(MainActivity.this, "New Game", Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.help:
-                Toast.makeText(MainActivity.this, "Help", Toast.LENGTH_SHORT).show();
+            case R.id.reset:
+                cursorAdapter.changeCursor(dbHelper.getCardGamesCursor(""));
                 return true;
         }
         return super.onOptionsItemSelected(item);
