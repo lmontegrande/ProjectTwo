@@ -40,9 +40,21 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     @Rule
     public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<MainActivity>(MainActivity.class);
 
+    @Before
+    public void setup() throws Exception {
+
+    }
+
+    @After
+    public void tearDown() throws Exception{
+
+    }
+
     @Test
     public void testActivity() throws Exception {
-        String test = "New Game 10";
+        populate(); // populate the game with stuff
+
+        String test = "New Game";
         int count;
 
         test1(test); // Add card game
@@ -175,13 +187,12 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
                 .check(matches(withText(startsWith(test))));
     }
 
-    @Before
-    public void setup() throws Exception {
+    private void populate() {
+        for (int x=0; x<10; x++) {
+            String test = "New Game " + x;
+            int count;
 
-    }
-
-    @After
-    public void tearDown() throws Exception{
-
+            test2(test); // Add card game
+        }
     }
 }

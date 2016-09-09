@@ -271,8 +271,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // Check to see if a string is a number
-    public boolean isNumeric(String str)
-    {
+    public boolean isNumeric(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
     }
 }

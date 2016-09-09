@@ -6,11 +6,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.Path;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -43,6 +45,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
     private TextView gameNameTextView;
     private CardDatabaseHelper dbHelper;
     private CursorAdapter cursorAdapter;
+    private boolean restrictHeight = true;
 
     private static final String TAG = "LEO";
 
@@ -109,7 +112,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 for (int x=1; x<attributes.length; x++) {
                     String attribute = attributes[x];
                     TextView textView = new TextView(context);
-                    //textView.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+                    if (restrictHeight) textView.setMaxHeight(100);
                     textView.setTextColor(Color.WHITE);
                     textView.setTextSize(20);
 
