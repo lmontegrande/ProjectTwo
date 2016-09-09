@@ -16,6 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+// This is the main activity for the app.  It displays all the card games
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     static final String TAG = "LEO";
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         handleIntent();
     }
 
+    // Initialize variables and setup views
     protected void setup() {
         activityContext = this;
         addButton = (Button) findViewById(R.id.game_add_button);
@@ -64,10 +67,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addButton.setOnClickListener(this);
     }
 
+    // Used for testing, calls the CardDatabaseHelper's clearDB function
     public void clearData() {
         dbHelper.clearDB();
     }
 
+    // Binds database data to the listview
     protected void bindData() {
         cursorAdapter = new CursorAdapter(this, dbHelper.getCardGamesCursor(), 0) {
             @Override
@@ -107,10 +112,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         gameListView.setAdapter(cursorAdapter);
     }
 
+    // Changes the cursor for the cursorAdapter and updates the listview
     public void updateList() {
         cursorAdapter.changeCursor(dbHelper.getCardGamesCursor());
     }
 
+    // Sets up the search bar functionality
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //return super.onCreateOptionsMenu(menu);
@@ -127,6 +134,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
+    // Checks to see if the activity was called through the search bar and if so, change the cursor
+    // based on the passed in query
     public void handleIntent() {
         Intent intent = getIntent();
         if (!intent.ACTION_SEARCH.equals(intent.getAction())) return;
@@ -134,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cursorAdapter.changeCursor(dbHelper.getCardGamesCursor(intent.getStringExtra(SearchManager.QUERY)));
     }
 
+    // Add functionality to the reset menu option.  Used to reset the list to the default cursor
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -144,11 +154,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
+    // Sets up the onClick to be used for adding card games
     @Override
     public void onClick(View view) {
         nameCardValues(view);
     }
 
+    // This function is used to create a new card game.  User types in a name then types in the
+    // attributes names with commas to separate each value
     public void nameCardValues(View view) {
         LayoutInflater inflater = this.getLayoutInflater();
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -162,10 +175,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         TextView textView = (TextView) dialogView.findViewById(R.id.game_numof_attributes);
                         TextView nameTextView = (TextView) dialogView.findViewById(R.id.game_name);
                         String stringNumber = textView.getText().toString();
-                        int number = isNumeric(stringNumber) ? Integer.parseInt(stringNumber) : 0;
+                        //int number = isNumeric(stringNumber) ? Integer.parseInt(stringNumber) : 0;
 
-                        if (number > 0) {
-                            nameCardAttributes(nameTextView.getText().toString(), number);
+                        String[] attributesArray = textView.getText().toString().split(",");
+                        ArrayList<String> attributes = new ArrayList();
+                        for (String att: attributesArray) {
+                            attributes.add(att.trim());
+                        }
+
+                        if (attributes != null) {
+                            dbHelper.createCardTable(nameTextView.getText().toString().replaceAll("'", " ").trim(), attributes);
+                            updateList();
+
+                            //nameCardAttributes(nameTextView.getText().toString(), number);
                         }
                         else
                             Toast.makeText(MainActivity.this, "Invalid Input", Toast.LENGTH_SHORT).show();
@@ -177,10 +199,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         // Cancel
                     }
                 });
-
         builder.show();
     }
 
+    // Was originally used to name attributes but would lock up keyboard.  Keeping here for future
+    // reference
     public void nameCardAttributes(final String gameName, final int howManyAttributes) {
         LayoutInflater inflater = this.getLayoutInflater();
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -228,7 +251,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onClick(DialogInterface dialogInterface, int i) {
                         ArrayList<String> attributes = new ArrayList<String>();
                         for (int x=0; x<howManyAttributes; x++) {
-                            attributes.add(((EditText)listView.getChildAt(x)).getText().toString());
+                            EditText editText = ((EditText)listView.getChildAt(x));
+                            attributes.add(editText.getText().toString());
+                            editText.requestFocus();
                         }
                         CardDatabaseHelper.getInstance(activityContext).createCardTable(gameName, attributes);
                         updateList();
@@ -241,9 +266,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-        builder.show();
+        builder.show().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+
     }
 
+    // Check to see if a string is a number
     public boolean isNumeric(String str)
     {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.

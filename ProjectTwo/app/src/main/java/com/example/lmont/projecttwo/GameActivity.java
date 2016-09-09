@@ -11,7 +11,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,6 +29,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+// This activity displays all the cards in a card game
 public class GameActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static final String GAME_KEY = "gamekey";
@@ -56,11 +56,13 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         handleIntent();
     }
 
+    // Bind data to the views
     private void bindData() {
         gameNameTextView.setText(gameName);
         attachCursorAdapter();
     }
 
+    // Initialize varibales and views
     private void setup() {
         context = this;
         gameName = getIntent().getStringExtra(GAME_KEY);
@@ -87,8 +89,9 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    // Attaches the cursor adapter to the listview
     private void attachCursorAdapter() {
-        cursorAdapter = new CursorAdapter(this, dbHelper.getGameCursor(gameName)) {
+        cursorAdapter = new CursorAdapter(this, dbHelper.getCardCursor(gameName)) {
             @Override
             public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
                 String[] attributes = dbHelper.getGameAttributes(gameName);
@@ -151,10 +154,13 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         cardList.setAdapter(cursorAdapter);
     }
 
+    // Custom onClick to be called when adding a new card
     public void onClick(View view) {
         addNewCard(view);
     }
 
+    // Method that takes in opens up a dialog for the user to input the information for the new
+    // card they are trying to add
     public void addNewCard(View view) {
         LayoutInflater inflater = this.getLayoutInflater();
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -182,7 +188,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                     public void onClick(DialogInterface dialogInterface, int i) {
                         ArrayList<String> userValues = new ArrayList<String>();
                         for (EditText userValue: editTexts) {
-                            userValues.add(userValue.getText().toString());
+                            userValues.add(userValue.getText().toString().replaceAll("'", " ").trim());
                         }
                         dbHelper.createNewCard(gameName, userValues);
                         updateList();
@@ -198,10 +204,12 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         builder.show();
     }
 
+    // Change the cursor used by the cursoradapter to match the new data in the database
     private void updateList() {
-        cursorAdapter.changeCursor(dbHelper.getGameCursor(gameName));
+        cursorAdapter.changeCursor(dbHelper.getCardCursor(gameName));
     }
 
+    // Sets up the search functionality
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         //return super.onCreateOptionsMenu(menu);
@@ -223,12 +231,15 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         return super.onSearchRequested();
     }
 
+    // Checks to see if the activity was called with a search.  Updates the cursorAdapter with the
+    // cursor that matches the SQL
     public void handleIntent() {
         Intent intent = getIntent();
         if (!intent.ACTION_SEARCH.equals(intent.getAction())) return;
         cursorAdapter.changeCursor(dbHelper.getCardCursor(intent.getStringExtra(SearchManager.QUERY), gameName));
     }
 
+    // Sets up the reset button to reset the cursorAdapter to the default cursor
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {

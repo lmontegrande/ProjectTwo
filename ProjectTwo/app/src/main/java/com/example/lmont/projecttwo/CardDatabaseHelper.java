@@ -33,6 +33,7 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
 
     private static CardDatabaseHelper instance;
 
+    // The singleton method used for getting the instance of the CardDatabaseHelper class
     public static CardDatabaseHelper getInstance(Context context) {
         if (instance == null) {
             instance = new CardDatabaseHelper(context);
@@ -41,20 +42,24 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
         return instance;
     }
 
+    // Private constructor class
     private CardDatabaseHelper(Context context) {
         super(context.getApplicationContext(), DB_NAME, null, DB_VERSION);
     }
 
+    // Called a new instance of the db is created
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(CREATE_GAME_TABLE_SQL);
     }
 
+    // Called when the db version number is increased
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         clearDB();
     }
 
+    // Creates a new card game table
     public void createCardTable(String gameName, ArrayList<String> cardAttributes) {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -66,9 +71,9 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
 
             // Create new cardgame table for game
             // CREATE TABLE IF NOT EXISTS gameName (_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            String createGame = "CREATE TABLE IF NOT EXISTS " + gameName + "(_id INTEGER PRIMARY KEY AUTOINCREMENT";
+            String createGame = "CREATE TABLE IF NOT EXISTS '" + gameName + "'(_id INTEGER PRIMARY KEY AUTOINCREMENT";
             for (String cardAttribute : cardAttributes) {
-                createGame += ", " + cardAttribute + " TEXT";
+                createGame += ", '" + cardAttribute + "' TEXT";
             }
             createGame += ")";
 
@@ -80,20 +85,24 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    // Creates a new card game table while also outputting a toast naming the new card game
+    // attributes
     public void createCardTable(Context context, String gameName, ArrayList<String> cardAttributes) {
         createCardTable(gameName, cardAttributes);
         Toast.makeText(context, gameName + " " + cardAttributes.toString(), Toast.LENGTH_SHORT).show();
     }
 
+    // Return the position of a card game in the cardgames table
     public int getIndexOfGame(String gameName) {
         return getCardGameNames().indexOf(gameName);
     }
 
+    // Returns an ArrayList containing all the names of the card games in the cardgames table
     public ArrayList<String> getCardGameNames() {
         ArrayList<String> cardGameNames = new ArrayList<>();
         // SELECT games FROM cardgames
         Cursor gameNamesSQL = getReadableDatabase().rawQuery(
-                "SELECT " + GAME_TABLE_FOREIGN_KEY + " FROM " + GAME_TABLE_NAME,
+                "SELECT " + GAME_TABLE_FOREIGN_KEY + " FROM '" + GAME_TABLE_NAME + "'",
                 null);
         while (gameNamesSQL.moveToNext()) {
             String game = gameNamesSQL.getString(gameNamesSQL.getColumnIndex(GAME_TABLE_FOREIGN_KEY));
@@ -102,65 +111,75 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
         return cardGameNames;
     }
 
+    // This method returns a cursor with all the card games in the cardgames table
     public Cursor getCardGamesCursor() {
         Cursor gameNamesSQL = getReadableDatabase().rawQuery(
-                "SELECT * FROM " + GAME_TABLE_NAME,
+                "SELECT * FROM '" + GAME_TABLE_NAME + "'",
                 null);
         return gameNamesSQL;
     }
 
+    // This method returns a cursor that points to all card games whose name contains a certain
+    // string
     public Cursor getCardGamesCursor(String contains) {
-        String searchSQL = "SELECT * FROM " + GAME_TABLE_NAME + " WHERE " + GAME_TABLE_FOREIGN_KEY + " LIKE '%" + contains + "%'";
+        String searchSQL = "SELECT * FROM '" + GAME_TABLE_NAME + "' WHERE " + GAME_TABLE_FOREIGN_KEY + " LIKE '%" + contains + "%'";
         Cursor gameNamesSQL = getReadableDatabase().rawQuery(searchSQL, null);
         return gameNamesSQL;
     }
 
+    // This method returns a String array of all the columns/attributes associated to a card game
     public String[] getGameAttributes(String game) {
-        Cursor dbCursor = getReadableDatabase().query(game, null, null, null, null, null, null);
+        Cursor dbCursor = getReadableDatabase().query("'" + game + "'", null, null, null, null, null, null);
         return dbCursor.getColumnNames();
     }
 
+    // This method is used to add a new card to a card game
     public void createNewCard(String game, ArrayList<String> values) {
         String[] colNames = getGameAttributes(game);
         ContentValues contentValues = new ContentValues();
         for(int x=0; x<values.size(); x++) {
             contentValues.put(colNames[x+1], values.get(x));
         }
-        getWritableDatabase().insert(game, null, contentValues);
+        getWritableDatabase().insert("'" + game + "'", null, contentValues);
     }
 
+    // This method removes a card from a specific card game
     public void removeCard(String game, String cardID) {
         getWritableDatabase().delete(
-                game,
+                "'" + game + "'",
                 getGameAttributes(game)[1] + " = " + "'" + cardID + "'",
                 null);
     }
 
-    public Cursor getGameCursor(String game) {
-        return getReadableDatabase().rawQuery("SELECT * FROM " + game, null);
+    // This method returns a cursor for all the cards in a game
+    public Cursor getCardCursor(String game) {
+        return getReadableDatabase().rawQuery("SELECT * FROM '" + game + "'", null);
     }
 
-    public Cursor getCardCursor(String card, String game) {
-        return getReadableDatabase().rawQuery("SELECT * FROM " + game + " WHERE " + getGameAttributes(game)[1] + " LIKE '%" + card + "%'", null);
+    // This method returns a cursor that points to all the cards in a game that match contain
+    // a certain string
+    public Cursor getCardCursor(String contains, String game) {
+        String searchSQL = "SELECT * FROM '" + game + "' WHERE \"" + getGameAttributes(game)[1] + "\" LIKE '%" + contains + "%'";
+        Log.d(TAG, "getCardCursor: " + searchSQL);
+        return getReadableDatabase().rawQuery(searchSQL, null);
     }
 
+    // This method removes a card game from the cardgames table
     public void removeGame(String game) {
         try {
-            getWritableDatabase().execSQL("DELETE FROM " + GAME_TABLE_NAME + " WHERE " + GAME_TABLE_FOREIGN_KEY + " = '" + game + "'");
-            getWritableDatabase().execSQL("DROP TABLE " + game);
+            getWritableDatabase().execSQL("DELETE FROM '" + GAME_TABLE_NAME + "' WHERE " + GAME_TABLE_FOREIGN_KEY + " = '" + game + "'");
+            getWritableDatabase().execSQL("DROP TABLE '" + game + "'");
         } catch (SQLiteException e) {
             Log.d(TAG, "removeGame: FAILED");
         }
     }
 
+    // This method returns an ArrayList with all of the attributes of a card
     public ArrayList<String> getCardInfo(String game, String cardName) {
         int x=0;
         ArrayList<String> cardInfo = new ArrayList<>();
         String[] attributes = getGameAttributes(game);
-//        String getCardInfoSQL = "SELECT * FROM ? WHERE ? = '?'";
-//        String[] getCardInfoSQLArgs = new String[]{game, attributes[1], cardName};
-//        Cursor cursor = getReadableDatabase().rawQuery(getCardInfoSQL, getCardInfoSQLArgs);
-        Cursor cursor = getReadableDatabase().query(game, attributes, attributes[1] + " = '" + cardName + "'", null, null, null, null);
+        Cursor cursor = getReadableDatabase().query("'" + game + "'", attributes, attributes[1] + " = '" + cardName + "'", null, null, null, null);
 
         cursor.moveToFirst();
         for (String attribute: attributes) {
@@ -171,16 +190,17 @@ public class CardDatabaseHelper extends SQLiteOpenHelper {
         return cardInfo;
     }
 
+    // This method is used for clearing out the database safely
     public void clearDB() {
         onCreate(getWritableDatabase());
         for (String gameName: getCardGameNames()) {
             try {
-                getWritableDatabase().execSQL("DROP TABLE " + gameName);
+                getWritableDatabase().execSQL("DROP TABLE '" + gameName + "'");
             } catch (SQLException e) {
                 Log.d(TAG, "clearDB: DROP TABLE " + gameName + " failed");
             }
         }
-        getWritableDatabase().execSQL("DROP TABLE " + GAME_TABLE_NAME);
+        getWritableDatabase().execSQL("DROP TABLE '" + GAME_TABLE_NAME + "'");
         onCreate(getWritableDatabase());
     }
 }

@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+// This activity displays a card's information
 public class CardActivity extends AppCompatActivity {
 
     public static final String
@@ -37,6 +38,7 @@ public class CardActivity extends AppCompatActivity {
         bindData();
     }
 
+    // Binds the card's data with the data from the database to the listview
     private void bindData() {
         cardNameTextView.setText(gameName);
         ArrayList<String> cardData = dbHelper.getCardInfo(gameName, cardName);
@@ -45,6 +47,7 @@ public class CardActivity extends AppCompatActivity {
         cardInfoListView.setAdapter(arrayAdapter);
     }
 
+    // Initialize variables and views
     private void setup() {
         Intent intent = getIntent();
         backButton = (Button) findViewById(R.id.card_activity_back_button);
